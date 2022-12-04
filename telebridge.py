@@ -488,7 +488,7 @@ def deltabot_start(bot: DeltaBot) -> None:
         loop.run_until_complete(load_delta_chats(contacto=key))
         time.sleep(5)
     if admin_addr:
-       bot.get_chat(admin_addr).send_text('El bot se ha iniciado 🤖🔥')
+       bot.get_chat(admin_addr).send_text('El bot se ha iniciado')
 
 def create_alias(bot, replies, message, payload):
     """Configure your alias for anonimous Super Groups, 
