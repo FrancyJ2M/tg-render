@@ -91,7 +91,7 @@ Thread(
 telebot_init.wait()
 #---------------------------------------------
 
-version = "0.2.15"
+version = "0.2.15.1(FrancyJ2M)"
 api_id = os.getenv('API_ID')
 api_hash = os.getenv('API_HASH')
 login_hash = os.getenv('LOGIN_HASH')
@@ -427,9 +427,9 @@ def deltabot_member_added(chat, contact, actor, message, replies, bot) -> None:
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
     #bot.account.add_account_plugin(AccountPlugin())
-    bot.account.set_config("displayname","Tg Chat🤖🔥")
+    bot.account.set_config("displayname","TgBridge🤖🔥")
     bot.account.set_avatar("telegram.jpeg")
-    #bot.account.set_config("delete_device_after","21600")
+    bot.account.set_config("delete_device_after","2000")
     global MAX_MSG_LOAD
     global MAX_MSG_LOAD_AUTO
     global MAX_AUTO_CHATS
@@ -442,7 +442,7 @@ def deltabot_init(bot: DeltaBot) -> None:
     global black_list
     MAX_MSG_LOAD = bot.get('MAX_MSG_LOAD') or 10
     MAX_MSG_LOAD = int(MAX_MSG_LOAD)
-    MAX_MSG_LOAD_AUTO = bot.get('MAX_MSG_LOAD_AUTO') or 5
+    MAX_MSG_LOAD_AUTO = bot.get('MAX_MSG_LOAD_AUTO') or 8
     MAX_MSG_LOAD_AUTO = int(MAX_MSG_LOAD_AUTO)
     MAX_AUTO_CHATS = bot.get('MAX_AUTO_CHATS') or 15
     MAX_AUTO_CHATS = int(MAX_AUTO_CHATS)
@@ -528,7 +528,7 @@ def deltabot_start(bot: DeltaBot) -> None:
         loop.run_until_complete(load_delta_chats(contacto=key))
         time.sleep(5)
     if admin_addr:
-       bot.get_chat(admin_addr).send_text('El bot se inicio🤖🔥)
+       bot.get_chat(admin_addr).send_text('El bot se inicio🤖🔥')
 
 def create_alias(bot, replies, message, payload):
     """Configure your alias for anonimous Super Groups, 
@@ -3205,9 +3205,9 @@ def bot_settings(bot: DeltaBot, payload, replies, message: Message):
        save_bot_db()
        replies.add(text = 'Setting '+parametros[0]+' set to '+str(paramtext)+' successfully!')
 
-@simplebot.command(admin=True)
+@simplebot.command(admin=False)
 def stats(bot, replies) -> None:
-    """Get bot and computer state."""
+    """Estado de la PC y el bot actual."""
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
     disk = psutil.disk_usage(os.path.expanduser("~/.simplebot/"))
