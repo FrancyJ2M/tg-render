@@ -50,6 +50,46 @@ import markdown
 import random
 import string
 
+#This is only for keep healty the web service
+#--------------------------------------------
+from flask import Flask, request
+import telebot
+from telebot import types as teletypes
+from telebot import util as teleutil
+
+TOKEN = os.environ.get('TOKEN')
+WEBHOOK = os.environ.get('RENDER_EXTERNAL_URL')+'/'
+
+bot = telebot.TeleBot(token=TOKEN, skip_pending=False)
+server = Flask(__name__)
+
+@bot.message_handler(commands=['help','Help','HELP','hELP'])
+def send_welcome(message):
+    bot.reply_to(message, 'This is a simplebot_tg helper')
+
+@server.route('/' + TOKEN, methods=['POST'])
+def getMessage():
+    bot.process_new_updates([teletypes.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK + TOKEN, allowed_updates=teleutil.update_types, drop_pending_updates = False)
+    return "!", 200
+
+def start_background_loop(bridge_initialized: Event) -> None:
+    bridge_initialized.set()
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 10000)))   
+
+telebot_init = Event()
+Thread(
+        target=start_background_loop,
+        args=(telebot_init,),
+        daemon=True,
+).start()
+telebot_init.wait()
+#---------------------------------------------
 
 version = "0.2.15"
 api_id = os.getenv('API_ID')
@@ -387,7 +427,7 @@ def deltabot_member_added(chat, contact, actor, message, replies, bot) -> None:
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
     #bot.account.add_account_plugin(AccountPlugin())
-    bot.account.set_config("displayname","DC<=>Tg")
+    bot.account.set_config("displayname","Tg Chat🤖🔥")
     bot.account.set_avatar("telegram.jpeg")
     #bot.account.set_config("delete_device_after","21600")
     global MAX_MSG_LOAD
@@ -412,7 +452,7 @@ def deltabot_init(bot: DeltaBot) -> None:
     MIN_SIZE_DOWN = int(MIN_SIZE_DOWN)
     CAN_IMP = bot.get('CAN_IMP') or 1
     CAN_IMP = int(CAN_IMP)
-    UPDATE_DELAY = bot.get('UPDATE_DELAY') or 17
+    UPDATE_DELAY = bot.get('UPDATE_DELAY') or 16
     UPDATE_DELAY = int(UPDATE_DELAY)
     SYNC_ENABLED = bot.get('SYNC_ENABLED') or 0
     SYNC_ENABLED = int(SYNC_ENABLED)
@@ -431,10 +471,10 @@ def deltabot_init(bot: DeltaBot) -> None:
     bot.commands.register(name = "/more" ,func = async_load_chat_messages)
     bot.commands.register(name = "/load" ,func = async_updater)
     bot.commands.register(name = "/exec" ,func = async_run, admin = True)
-    bot.commands.register(name = "/login" ,func = async_login_num, admin = True)
+    bot.commands.register(name = "/login" ,func = async_login_num, admin=True)
     bot.commands.register(name = "/sms" ,func = async_login_code)
     bot.commands.register(name = "/pass" ,func = async_login_2fa)
-    bot.commands.register(name = "/token" ,func = async_login_session, admin = True)
+    bot.commands.register(name = "/token" ,func = async_login_session, admin =True)
     bot.commands.register(name = "/logout" ,func = logout_tg)
     bot.commands.register(name = "/remove" ,func = remove_chat)
     bot.commands.register(name = "/down" ,func = async_down_chat_messages)
@@ -488,7 +528,7 @@ def deltabot_start(bot: DeltaBot) -> None:
         loop.run_until_complete(load_delta_chats(contacto=key))
         time.sleep(5)
     if admin_addr:
-       bot.get_chat(admin_addr).send_text('El bot se ha iniciado')
+       bot.get_chat(admin_addr).send_text('El bot se inicio🤖🔥)
 
 def create_alias(bot, replies, message, payload):
     """Configure your alias for anonimous Super Groups, 
@@ -701,7 +741,7 @@ async def chat_news(bot, payload, replies, message):
        for d in all_chats:
            if d.unread_count>0:
               no_leidos = str(d.unread_count)
-              no_leidos = '<a style="color:white;background:red;border-radius:15px;padding-left:3px;padding-top:3px;padding-right:3px;padding-bottom:3px">'+no_leidos+'</a>'
+              no_leidos = '<a style="color:white;background:green;border-radius:15px;padding-left:3px;padding-top:3px;padding-right:3px;padding-bottom:3px">'+no_leidos+'</a>'
            else:
               no_leidos = ''
               if not is_full:
@@ -729,9 +769,9 @@ async def chat_news(bot, payload, replies, message):
                  titulo = '?'
               profile_letter = '<div style="font-size:50px;color:white;background:#7777ff;border-radius:25px;width:50px;height:50px"><center>'+str(titulo[0])+'</center></div>'
               if str(d.id) in chatdb[addr]:
-                 comando = '<br><a href="mailto:'+bot_addr+'?body=/remove_'+str(d.id)+'">❌ Desvilcular</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">↔️ Vincular con...</a>'
+                 comando = '<br><a href="mailto:'+bot_addr+'?body=/remove_'+str(d.id)+'">❌ Desvilcular</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">📎 Vincular con...</a>'
               else:
-                 comando = '<br><a href="mailto:'+bot_addr+'?body=/load_'+str(d.id)+'">✅ Cargar</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">↔️ Vincular con...</a>'
+                 comando = '<br><a href="mailto:'+bot_addr+'?body=/load_'+str(d.id)+'">✅ Cargar</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">📎 Vincular con...</a>'
               try:
                   if is_img:
                      profile_photo = '<img src="data:image/jpeg;base64,{}" alt="{}" style="width:50px;height:50px;border-radius:25px"/>'.format(base64.b64encode(await client.download_profile_photo(d.id,bytes,download_big=False)).decode(), str(titulo[0]))
