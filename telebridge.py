@@ -50,50 +50,8 @@ import markdown
 import random
 import string
 
-#This is only for keep healty the web service
-#--------------------------------------------
 
-from flask import Flask, request
-import telebot
-from telebot import types as teletypes
-from telebot import util as teleutil
-
-TOKEN = os.environ.get('TOKEN')
-WEBHOOK = os.environ.get('RENDER_EXTERNAL_URL')+'/'
-
-bot = telebot.TeleBot(token=TOKEN, skip_pending=False)
-server = Flask(__name__)
-
-@bot.message_handler(commands=['help','Help','HELP','hELP'])
-def send_welcome(message):
-    bot.reply_to(message, 'This is a simplebot_tg helper')
-
-@server.route('/' + TOKEN, methods=['POST'])
-def getMessage():
-    bot.process_new_updates([teletypes.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "!", 200
-
-@server.route("/")
-def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK + TOKEN, allowed_updates=teleutil.update_types, drop_pending_updates = False)
-    return "!", 200
-
-def start_background_loop(bridge_initialized: Event) -> None:
-    bridge_initialized.set()
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 10000)))   
-
-telebot_init = Event()
-Thread(
-        target=start_background_loop,
-        args=(telebot_init,),
-        daemon=True,
-).start()
-telebot_init.wait()
-
-#---------------------------------------------
-
-version = "Matrix(0.2.15)"
+version = "matrix"
 api_id = os.getenv('API_ID')
 api_hash = os.getenv('API_HASH')
 login_hash = os.getenv('LOGIN_HASH')
@@ -394,13 +352,14 @@ class AccountPlugin:
 def deltabot_incoming_message(message, replies) -> Optional[bool]:
     """Check that the sender is not in the black or white list."""
     sender_addr = message.get_sender_contact().addr
+    contacto = message.get_sender_contact().name
     if white_list and sender_addr!=admin_addr and sender_addr not in white_list:
        if message.text.lower().startswith('/pdown') or message.text.lower().startswith('/alias'):
           return None
-       print('Usuario '+str(sender_addr)+' no esta en la lista blanca')
+       replies.add('No puede usar el bot **'+contacto+'** no se enuctra en la WHITE_LIST')
        return True
     if black_list and sender_addr!=admin_addr and sender_addr in black_list:
-       print('Usuario '+str(sender_addr)+' esta en la lista negra')
+       replies.add('No puede usar el bot **'+contacto+'** SE ENCUENTRA EN LA BLACK_LIST !!')
        return True
     #print(message)
     """
@@ -429,7 +388,7 @@ def deltabot_member_added(chat, contact, actor, message, replies, bot) -> None:
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
     #bot.account.add_account_plugin(AccountPlugin())
-    bot.account.set_config("displayname","TgBridge🤖🔥")
+    bot.account.set_config("displayname","TgBridge🛡️")
     bot.account.set_avatar("telegram.jpeg")
     #bot.account.set_config("delete_device_after","21600")
     global MAX_MSG_LOAD
@@ -444,7 +403,7 @@ def deltabot_init(bot: DeltaBot) -> None:
     global black_list
     MAX_MSG_LOAD = bot.get('MAX_MSG_LOAD') or 10
     MAX_MSG_LOAD = int(MAX_MSG_LOAD)
-    MAX_MSG_LOAD_AUTO = bot.get('MAX_MSG_LOAD_AUTO') or 5
+    MAX_MSG_LOAD_AUTO = bot.get('MAX_MSG_LOAD_AUTO') or 10
     MAX_MSG_LOAD_AUTO = int(MAX_MSG_LOAD_AUTO)
     MAX_AUTO_CHATS = bot.get('MAX_AUTO_CHATS') or 15
     MAX_AUTO_CHATS = int(MAX_AUTO_CHATS)
@@ -473,14 +432,14 @@ def deltabot_init(bot: DeltaBot) -> None:
     bot.commands.register(name = "/more" ,func = async_load_chat_messages)
     bot.commands.register(name = "/load" ,func = async_updater)
     bot.commands.register(name = "/exec" ,func = async_run, admin = True)
-    bot.commands.register(name = "/login" ,func = async_login_num, admin=True)
-    bot.commands.register(name = "/sms" ,func = async_login_code, admin =True)
+    bot.commands.register(name = "/login" ,func = async_login_num, admin =True)
+    bot.commands.register(name = "/sms" ,func = async_login_code)
     bot.commands.register(name = "/pass" ,func = async_login_2fa)
     bot.commands.register(name = "/token" ,func = async_login_session, admin =True)
     bot.commands.register(name = "/logout" ,func = logout_tg)
     bot.commands.register(name = "/remove" ,func = remove_chat)
     bot.commands.register(name = "/down" ,func = async_down_chat_messages)
-    bot.commands.register(name = "/pdown" ,func = async_private_down_chat_messages, hidden=True)
+    bot.commands.register(name = "/pdown" ,func = async_private_down_chat_messages, hidden = True)
     bot.commands.register(name = "/comment" ,func = async_comment_chat_messages)
     bot.commands.register(name = "/c" ,func = async_click_button)
     bot.commands.register(name = "/b" ,func = async_send_cmd)
@@ -497,7 +456,7 @@ def deltabot_init(bot: DeltaBot) -> None:
     bot.commands.register(name = "/pin" ,func = async_pin_messages)
     bot.commands.register(name = "/news" ,func = async_chat_news)
     bot.commands.register(name = "/info" ,func = async_chat_info)
-    bot.commands.register(name = "/setting" ,func = bot_settings, admin = True)
+    bot.commands.register(name = "/sett" ,func = bot_settings, admin = True)
     bot.commands.register(name = "/react" ,func = async_react_button)
     bot.commands.register(name = "/link2" ,func = link_to)
     bot.commands.register(name = "/dbxtoken" ,func = get_dbxtoken, admin = True)
@@ -533,7 +492,7 @@ def deltabot_start(bot: DeltaBot) -> None:
        bot.get_chat(admin_addr).send_text('🤖🔥')
 
 def create_alias(bot, replies, message, payload):
-    """Configure su alias para descargar archivos en grupos adjuntos al bot """
+    """Configure su alias para interactuar con grupos donde este el bot, envie /alias a mi pv """
     global prealiasdb
     global aliasdb
     parametros = payload.split()
@@ -541,7 +500,7 @@ def create_alias(bot, replies, message, payload):
     if len(parametros)==0 and not message.chat.is_multiuser():
        calias = ''.join(random.choice(string.ascii_lowercase) for i in range(6))
        prealiasdb[calias] = addr
-       replies.add('Envie /alias_'+calias+' en el grupo donde esté el bot (mantenga presionado /alias... para copiarlo)')
+       replies.add('Envie /alias_'+calias+' en el super grupo anónimo donde esté el bot (mantenga presionado /alias... para copiarlo)')
     if len(parametros)==1:
        if parametros[0] in prealiasdb:
           aliasdb[addr]=prealiasdb[parametros[0]]
@@ -742,7 +701,7 @@ async def chat_news(bot, payload, replies, message):
        for d in all_chats:
            if d.unread_count>0:
               no_leidos = str(d.unread_count)
-              no_leidos = '<a style="color:white;background:green;border-radius:15px;padding-left:3px;padding-top:3px;padding-right:3px;padding-bottom:3px">'+no_leidos+'</a>'
+              no_leidos = '<a style="color:white;background:black;border-radius:15px;padding-left:3px;padding-top:3px;padding-right:3px;padding-bottom:3px">'+no_leidos+'</a>'
            else:
               no_leidos = ''
               if not is_full:
@@ -770,9 +729,9 @@ async def chat_news(bot, payload, replies, message):
                  titulo = '?'
               profile_letter = '<div style="font-size:50px;color:white;background:#7777ff;border-radius:25px;width:50px;height:50px"><center>'+str(titulo[0])+'</center></div>'
               if str(d.id) in chatdb[addr]:
-                 comando = '<br><a href="mailto:'+bot_addr+'?body=/remove_'+str(d.id)+'">❌ Desvilcular</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">📎 Vincular con...</a>'
+                 comando = '<br><a href="mailto:'+bot_addr+'?body=/remove_'+str(d.id)+'">❌ Desvilcular</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">↔️ Vincular...</a>'
               else:
-                 comando = '<br><a href="mailto:'+bot_addr+'?body=/load_'+str(d.id)+'">✅ Cargar</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">📎 Vincular con...</a>'
+                 comando = '<br><a href="mailto:'+bot_addr+'?body=/load_'+str(d.id)+'">✅ Cargar</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">↔️ Vincular...</a>'
               try:
                   if is_img:
                      profile_photo = '<img src="data:image/jpeg;base64,{}" alt="{}" style="width:50px;height:50px;border-radius:25px"/>'.format(base64.b64encode(await client.download_profile_photo(d.id,bytes,download_big=False)).decode(), str(titulo[0]))
@@ -818,17 +777,17 @@ async def chat_news(bot, payload, replies, message):
        replies.add(text=estr)
 
 def async_chat_news(bot, payload, replies, message):
-    """Muestra los msg nuevos de cada chat.\nAl igual puede cargarlo con parametros full <= todos los chats\nimg <= con imagenes\nEj: /news full img"""
+    """Muestra los msg nuevos de cada chat.Al igual puede cargarlo con parametros\nfull <= todos los chats\nimg <= con imagenes\nEj: /news full img"""
     loop.run_until_complete(chat_news(bot, payload, replies, message))
 
 
 def link_to(bot, payload, replies, message):
-    """Enlaza un chat de Telegram con uno de DeltaChat"""
+    """Enlaza un chat de Telegram en un grupo donde se encuentre el bot"""
     if message.get_sender_contact().addr not in logindb:
        replies.add(text = 'Debe iniciar sesión para vincular chats!')
        return
     if not bot.is_admin(message.get_sender_contact()) and (len(message.chat.get_contacts())>2 or message.chat.is_mailinglist()):
-       replies.add(text = 'Debe ser adm para vincular grupos con mas de 2 participantes 🧐')
+       replies.add(text = 'Debe ser administrador para vincular un chat de mas de 2 miembros o un super grupo!')
        return
     if payload:
        tchat = payload.replace('@','')
@@ -955,7 +914,7 @@ async def chat_info(bot, payload, replies, message):
        replies.add(text=estr)
 
 def async_chat_info(bot, payload, replies, message):
-    """Muestra informacion del chat o respondiendo un msg la info de el. """
+    """Muestra informacion del chat, o respondiendo un msg, la info de este."""
     loop.run_until_complete(chat_info(bot, payload, replies, message))
 
 async def pin_messages(bot, message, replies):
@@ -984,7 +943,8 @@ async def pin_messages(bot, message, replies):
           replies.add(text=code)
 
 def async_pin_messages(bot, message, replies):
-    """Acceder a chats con seguridad
+    """Fijar un msg respondiendo al mimso con:
+    /pin
     """
     loop.run_until_complete(pin_messages(bot, message, replies))
 
@@ -1028,15 +988,13 @@ async def forward_message(bot, message, replies, payload):
        replies.add(text=code)
 
 def async_forward_message(bot, message, replies, payload):
-    """Reenvia msg de un chat a otro con los id respectivos:
-    /forward 3648 me
-    Esto reenviara el msg 3648 a Mensajes guardados
+    """Reenvia msg de un chat a otro con los id respectivos:\n/forward 3648 me\nEsto reenviara el msg 3648 a Mensajes guardados
     """
     loop.run_until_complete(forward_message(bot, message, replies, payload))
 
 
 def list_chats(replies, message, payload):
-    """Muestra los chats cargados con el bot"""
+    """Muestra los chats cargados por el bot"""
     addr = message.get_sender_contact().addr
     if addr not in logindb:
        replies.add(text = 'Debe iniciar sesión para listar sus chats!')
@@ -1049,7 +1007,7 @@ def list_chats(replies, message, payload):
     replies.add(text = chat_list)
 
 async def add_auto_chats(bot, replies, message):
-    """Activa/Desactiva carga automatica de msg en el chat"""
+    """Activa/desactiva la entrada automatica de msg en el chat"""
     alloweddb ={'deltachat2':''}
     addr = message.get_sender_contact().addr
     if addr not in logindb:
@@ -1107,7 +1065,7 @@ async def add_auto_chats(bot, replies, message):
 
 
 def async_add_auto_chats(bot, replies, message):
-    """Activa/Desactiva carga automatica de msg en el chat"""
+    """Activa/desactiva la entrada automatica de msg en el chat"""
     loop.run_until_complete(add_auto_chats(bot, replies, message))
     saveautochats(bot)
     #if DBXTOKEN:
@@ -1171,7 +1129,7 @@ def async_load_delta_chats(message, replies):
 
 def remove_chat(bot, payload, replies, message):
     """Remueve los chat cargados con el bot.
-       Puede removerlo todos /remove all o uno en epecifico con su id /remove -10023456789"""
+Todos: /remove all o uno en epecifico con su id:\nEj: /remove -10023456789"""
     target = None
     self_target = get_tg_id(message.chat, bot)
     rpto = get_tg_reply(message.chat, bot)
@@ -1215,7 +1173,7 @@ def remove_chat(bot, payload, replies, message):
 
 
 def logout_tg(bot, payload, replies, message):
-    """Cierra la sesion en Telegram y en el bot"""
+    """Cierra la sesion en el bot!"""
     addr = message.get_sender_contact().addr
     if addr in logindb:
        del logindb[addr]
@@ -1224,7 +1182,7 @@ def logout_tg(bot, payload, replies, message):
        if addr in autochatsdb:
           autochatsdb[addr].clear()
        savelogin(bot)
-       replies.add(text = 'Se ha cerrado la sesión en telegram, puede usar su token para iniciar en cualquier momento 🤖')
+       replies.add(text = 'Se ha cerrado la sesión en telegram, puede usar su token para iniciar en cualquier momento!')
     else:
        replies.add(text = 'Actualmente no está logueado en el puente')
 
@@ -1250,7 +1208,7 @@ async def login_num(payload, replies, message):
           me = await clientdb[addr].send_code_request(parametros[0], force_sms = forzar_sms)
        except errors.FloodWaitError as e:
           print(e)
-          replies.add(text = 'Atencion!\nHa solicitado demasiadas veces el codigo y Telegram le ha penalizado con '+str(e.seconds)+' segundos de espera para poder solicitar nuevamente el codigo!')
+          replies.add(text = '**Atencion!**\nHa solicitado demasiadas veces el codigo y Telegram le ha penalizado con '+str(e.seconds)+' segundos de espera para poder solicitar nuevamente el codigo!')
           return
        hashdb[addr] = me.phone_code_hash
        phonedb[addr] = parametros[0]
@@ -1262,7 +1220,7 @@ async def login_num(payload, replies, message):
           replies.add(text='Debe escribir el codigo del pais mas el numero (sin espacios), ejemplo /login +5355555555')
 
 def async_login_num(payload, replies, message):
-    """Inicia sesion en Telegram con su numero telefonico. Ej: /login +5312345678"""
+    """Inicia sesion en el bot con su nuemro telefonico.\n Ej: /login +5359794200"""
     loop.run_until_complete(login_num(payload, replies, message))
 
 async def login_code(bot, payload, replies, message):
@@ -1275,7 +1233,7 @@ async def login_code(bot, payload, replies, message):
               me = await clientdb[addr].sign_in(phone=phonedb[addr], phone_code_hash=hashdb[addr], code=payload)
               logindb[addr]=clientdb[addr].session.save()
               savelogin(bot)
-              replies.add(text = 'Se ha iniciado sesiòn correctamente, copie y pegue el mensaje del token en privado para iniciar rápidamente.\n⚠️No debe compartir su token⚠️\n Con nadie porque pueden usar su cuenta con este.\n\nAhora puede escribir /news full img para mostrar todos sus chats.')
+              replies.add(text = 'Se ha iniciado sesiòn correctamente, copie y pegue el mensaje del token en privado para iniciar rápidamente.\n⚠No debe compartir su token con nadie porque pueden usar su cuenta con este.\n\nAhora puede escribir /load para cargar sus chats.')
               replies.add(text = '/token '+logindb[addr])
               await clientdb[addr].disconnect()
               del clientdb[addr]
@@ -1291,7 +1249,7 @@ async def login_code(bot, payload, replies, message):
           replies.add(text=code)
 
 def async_login_code(bot, payload, replies, message):
-    """Confirmar sesion con el codigo mandado despues de usar /login. Ej: /sms 12345"""
+    """Confirmar la sesion en el bot con el sms obtenido. Ej: /sms 12345"""
     loop.run_until_complete(login_code(bot, payload, replies, message))
     if message.get_sender_contact().addr in logindb:
        async_load_delta_chats(message = message, replies = replies)
@@ -1305,7 +1263,7 @@ async def login_2fa(bot, payload, replies, message):
           me = await clientdb[addr].sign_in(phone=phonedb[addr], password=payload)
           logindb[addr]=clientdb[addr].session.save()
           savelogin(bot)
-          replies.add(text = 'Se ha iniciado sesiòn correctamente, copie y pegue el mensaje del token en privado para iniciar rápidamente.\n⚠️No debe compartir su token⚠️\n Con nadie porque pueden usar su cuenta con este.\n\nAhora puede escribir /news full img para mostrar todos sus chats.')
+          replies.add(text = 'Se ha iniciado sesiòn correctamente, copie y pegue el mensaje del token en privado para iniciar rápidamente.\n⚠No debe compartir su token con nadie porque pueden usar su cuenta con este.\n\nAhora puede escribir /load para cargar sus chats.')
           replies.add(text = '/token '+logindb[addr])
           await clientdb[addr].disconnect()
           del clientdb[addr]
@@ -1323,7 +1281,7 @@ async def login_2fa(bot, payload, replies, message):
           replies.add(text=code)
 
 def async_login_2fa(bot, payload, replies, message):
-    """Confirmar sesion con su codigo 2FA. Ej: /pass PASSWORD"""
+    """Confirmar si tiene el 2FA activo. Ej: /pass PASSWORD"""
     loop.run_until_complete(login_2fa(bot, payload, replies, message))
     if message.get_sender_contact().addr in logindb:
        async_load_delta_chats(message = message, replies = replies)
@@ -1359,7 +1317,7 @@ async def login_session(bot, payload, replies, message):
        replies.add(text='Su token es:\n\n'+logindb[addr])
 
 def async_login_session(bot, payload, replies, message):
-    """Inicio de sesion rapidamente en el bot gracias al token obtenido en la primera sesion. Ej: /token abigtexthashloginusingintelethonlibrary..."""
+    """Inicio rapido en el bot con el token obtenido en la primera sesion(puede usar ese token para iniciar en cualquier simplebot_tg) Ej: /token xhcjdjcjdncjdnxkdncndn...."""
     loop.run_until_complete(login_session(bot, payload, replies, message))
     if message.get_sender_contact().addr in logindb:
        async_load_delta_chats(message = message, replies = replies)
@@ -1444,8 +1402,8 @@ async def updater(bot, payload, replies, message):
        replies.add(text=code)
 
 def async_updater(bot, payload, replies, message):
-    """Cargar chat de Telegram en el  bot.Puede cargar sus chats privados /load #privates
-    o cargar un chat epecifico con su id: /load delta cht"""
+    """Cargar chat de Telegram en el bot.Puede cargar sus chats privados\n /load #privates
+o cargar un chat epecifico con su id: /load -10023456789"""
     loop.run_until_complete(updater(bot, payload, replies, message))
     if message.get_sender_contact().addr in logindb:
        async_save_delta_chats(replies = replies, message = message)
@@ -1454,7 +1412,7 @@ async def click_button(bot, message, replies, payload):
     parametros = payload.split()
     addr = message.get_sender_contact().addr
     if addr not in logindb:
-       replies.add(text = 'Debe iniciar sesión para usar los botones!')
+       replies.add(text = 'Debe iniciar sesión usar los botones!')
        return
     if len(parametros)<2:
        replies.add(text = 'Faltan parametros, debe proporcionar el id de mensaje y al menos el numero de columna')
@@ -1481,7 +1439,7 @@ async def click_button(bot, message, replies, payload):
        replies.add(text=code)
 
 def async_click_button(bot, message, replies, payload):
-    """Hacer click en un botton"""
+    """Click en un botton"""
     loop.run_until_complete(click_button(bot = bot, message = message, replies = replies, payload = payload))
     parametros = payload.split()
     loop.run_until_complete(load_chat_messages(bot = bot, message=message, replies=replies, payload=parametros[0], dc_contact = message.get_sender_contact().addr, dc_id = message.chat.id, is_auto = False))
@@ -1544,7 +1502,7 @@ async def react_button(bot, message, replies, payload):
        replies.add(text=code)
 
 def async_react_button(bot, message, replies, payload):
-    """Puede obtener las reacciones disponibles /react y reaccionar a un msg /react ❤"""
+    """Reaccionar a un msg con un emoji, para esto cite el msg a reaccionar.(para conocer las reacciones disponibles envie /react en el chat)\n Ej :/react ❤"""
     loop.run_until_complete(react_button(bot = bot, message = message, replies = replies, payload = payload))
     addr = message.get_sender_contact().addr
     t_reply = is_register_msg(addr, message.chat.id, message.quote.id)
@@ -1711,7 +1669,7 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
               reactions_text = ''
               comment_text = ''
               sender_name = None
-              down_button = "\n🔽 /down_"+str(m.id)+"\n⏬ /pdown_"+str(m.id)+"\n⏩ /forward_"+str(m.id)+"_tg_file_link_bot\n⏩ /forward_"+str(m.id)+"_karurosagu_shell_bot\n⏩ /forward_"+str(m.id)+"_karurosagu_mail_bot"
+              down_button = "\n🔽 /down_"+str(m.id)+"\n⏬ /pdown_"+str(m.id)+"\n⏩ /forward_"+str(m.id)+"_karurosagu_shell_bot\n⏩ /forward_"+str(m.id)+"_DrFileStreamBot"
               if show_id:
                  msg_id = '\n'+str(m.id)
 
@@ -2339,17 +2297,23 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
 
 def async_load_chat_messages(bot, message, replies, payload):
     """Cargar mas msg en el chat.
-    Cargar msg desde #5: /more 5
-    Cargar msg anteriores #10: /more -10
-    Cargar el ultimo msg: /more last"""
+Cargar msg desde #5: /more 5
+Cargar msg anteriores #10: /more -10
+Cargar el ultimo msg: /more last"""
     loop.run_until_complete(load_chat_messages(bot=bot, message=message, replies=Replies, payload=payload, dc_contact = message.get_sender_contact().addr, dc_id = message.chat.id, is_auto = False))
 
 def async_down_chat_messages(bot, message, replies, payload):
-    """Descargar archivos en el chat."""
+    """Descargar un archivo con su id respectivo"""
     loop.run_until_complete(load_chat_messages(bot=bot, message=message, replies=Replies, payload=payload, dc_contact = message.get_sender_contact().addr, dc_id = message.chat.id, is_auto = False))
     
 def async_private_down_chat_messages(bot, message, replies, payload):
-    """Descargar archivos en el chat."""
+    """Download messages files from telegram to private chat
+    using an existing admin login account,
+    you can add specific message id to download one message
+    or with - sign download messages from this id number. Examples:
+    Download message #5: /pdown 5
+    Download message from #10: /pdown -10
+    Download last message in the chat: /pdown last"""
     loop.run_until_complete(load_chat_messages(bot=bot, message=message, replies=Replies, payload=payload, dc_contact = message.get_sender_contact().addr, dc_id = message.chat.id, is_auto = False))
 
 def async_comment_chat_messages(bot, message, replies, payload):
@@ -2361,7 +2325,7 @@ def async_comment_chat_messages(bot, message, replies, payload):
       
 
 async def direct_comment(bot, message, replies, payload):
-    """Hola🤖👋\n\nSoy un bot puente entre Telegram/DeltaChat...Una forma mas economica de acceder a tus chats en Telegram 🔥"""
+    """Write direct in chat to write a telegram chat"""
     addr = message.get_sender_contact().addr
     if addr not in logindb:
        replies.add(text = 'Debe iniciar sesión para enviar comentarios.')
@@ -2384,7 +2348,7 @@ async def direct_comment(bot, message, replies, payload):
        replies.add(text=estr)
 
 async def echo_filter(bot, message, replies):
-    """Hola🤖👋\n\nSoy un bot puente entre Telegram/DeltaChat...Una forma mas economica de acceder a tus chats en Telegram 🔥"""
+    """Write direct in chat to write a telegram chat"""
     if message.is_system_message():
        return
     addr = message.get_sender_contact().addr
@@ -2392,7 +2356,7 @@ async def echo_filter(bot, message, replies):
        if message.chat.is_mailinglist() or len(message.chat.get_contacts())>2:
           return
        else:
-          replies.add(text = 'Debe iniciar sesión para enviar mensajes')
+          replies.add(text = 'Debe iniciar sesión para enviar mensajes, use los comandos:\n/login +CODIGOPAISNUMERO\no\n/token SUTOKEN para iniciar, use /help para ver la lista de comandos.')
           return
     c_id = get_tg_reply(message.chat, bot)
     target = get_tg_id(message.chat, bot)
@@ -2489,7 +2453,7 @@ async def echo_filter(bot, message, replies):
 
 @simplebot.filter
 def async_echo_filter(bot, message, replies):
-    """Hola🤖👋\n\nSoy un bot puente entre Telegram/DeltaChat...Una forma mas economica de acceder a tus chats en Telegram 🔥"""
+    """Write direct in chat bridge to write to telegram chat"""
     global authorize_url
     if authorize_url and not message.chat.is_multiuser():
        try:
@@ -2565,7 +2529,7 @@ async def send_cmd(bot, message, replies, payload):
        replies.add(text=code)
 
 def async_send_cmd(bot, message, replies, payload):
-    """Envie cmd a un chat en Telegram. Ej: /b /help"""
+    """Enviar comandos a un chat de Telegram. Ej: /b /help"""
     loop.run_until_complete(send_cmd(bot, message, replies, payload))
     loop.run_until_complete(load_chat_messages(bot = bot, message=message, replies=replies, payload='', dc_contact = message.get_sender_contact().addr, dc_id = message.chat.id, is_auto = False))
 
@@ -2778,7 +2742,7 @@ async def inline_cmd(bot, message, replies, payload):
        #await client.disconnect()
 
 def async_inline_cmd(bot, message, replies, payload):
-    """Busqueda usando bot inline de Telegram. Ej: /inline gif dogs"""
+    """Search command for inline telegram bots. Example /inline gif dogs"""
     loop.run_until_complete(inline_cmd(bot, message, replies, payload))
 
 def async_inmore_cmd(bot, message, replies, payload):
@@ -2849,7 +2813,7 @@ def async_search_chats(bot, message, replies, payload):
 async def join_chats(bot, message, replies, payload):
     addr = message.get_sender_contact().addr
     if addr not in logindb:
-       replies.add(text = 'Debe iniciar sesión para buscar chats')
+       replies.add(text = 'Debe iniciar sesión para buscar chats.')
        return
     try:
         client = TC(StringSession(logindb[addr]), api_id, api_hash)
@@ -2871,8 +2835,8 @@ async def join_chats(bot, message, replies, payload):
         replies.add(text=code)
 
 def async_join_chats(bot, message, replies, payload):
-    """Unirae a chats. Ej: /join usernamegroup
-    o por invitacion: /join https://t.me/joinchat/invitehashtoprivatechat"""
+    """Join to telegram chats by username or private link. Example: /join usernamegroup
+    or /join https://t.me/joinchat/invitehashtoprivatechat"""
     loop.run_until_complete(join_chats(bot = bot, message = message, replies = replies, payload = payload))
     loop.run_until_complete(updater(bot=bot, payload=payload, replies=replies, message=message))
     if message.get_sender_contact().addr in logindb:
@@ -2979,13 +2943,13 @@ async def preview_chats(bot, payload, replies, message):
         replies.add(text=code)
 
 def async_preview_chats(bot, payload, replies, message):
-    """Vistas previas de un chat: /preview username"""
+    """Preview chat with out join it, using the username like: /preview username"""
     loop.run_until_complete(preview_chats(bot, payload, replies, message))
     if message.get_sender_contact().addr in logindb:
        async_save_delta_chats(replies = replies, message = message)
 
 def eval_func(bot: DeltaBot, payload, replies, message: Message):
-    """Interactuar con el codigo Python del bot 🤖"""
+    """eval and back result. Example: /eval 2+2"""
     try:
        code = str(eval(payload))
     except:
@@ -2993,7 +2957,7 @@ def eval_func(bot: DeltaBot, payload, replies, message: Message):
     replies.add(text=code or "echo")
     
 def create_comment_chat(bot, message, replies, payload):
-    """Crear un chat para un comentario especifico,en el cual comentara dicho post. Ej: /chat 1234"""
+    """Crear un chat de comentarios. Ej: /chat 1234"""
     target = get_tg_id(message.chat, bot)
     if DBXTOKEN or DATABASE_URL:
        tmp_name = message.chat.get_name()
@@ -3061,7 +3025,7 @@ async def auto_load(bot, message, replies):
         time.sleep(UPDATE_DELAY)
 
 def start_updater(bot, message, replies):
-    """Iniciar las autodescarga de msg"""
+    """Start scheduler updater to get telegram messages. /start"""
     is_done = True
     global auto_load_task
     global tloop
@@ -3076,7 +3040,7 @@ def start_updater(bot, message, replies):
        replies.add(text='Las autodescargas se han iniciado!')
 
 def stop_updater(bot: DeltaBot, payload, replies, message: Message):
-    """Pausa a las autodescarga de msg"""
+    """Stop scheduler updater to get telegram messages. /stop"""
     global auto_load_task
     if auto_load_task:
        if not auto_load_task.cancelled():
@@ -3180,9 +3144,13 @@ def bot_settings(bot: DeltaBot, payload, replies, message: Message):
        save_bot_db()
        replies.add(text = 'Setting '+parametros[0]+' set to '+str(paramtext)+' successfully!')
 
-@simplebot.command(admin=True)
+@simplebot.command(admin=False)
 def stats(bot, replies) -> None:
     """Estado de la PC y el bot en tiempo real."""
+    cont = 0
+    for i in logindb:
+        cont+=1
+    
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
     disk = psutil.disk_usage(os.path.expanduser("~/.simplebot/"))
@@ -3208,7 +3176,8 @@ def stats(bot, replies) -> None:
         f"SimpleBot: {simplebot.__version__}\n"
         f"DeltaChat: {deltachat.__version__}\n"
         f"Telethon: {TC.__version__}\n"
-        f"simplebot_tg: {version}\n",
+        f"simplebot_tg: {version}\n"
+        f"Usuarios logueados: {cont}\n",
         html=bot.account.get_connectivity_html()
     )
 
@@ -3227,6 +3196,46 @@ def start_background_loop(bridge_initialized: Event) -> None:
     tloop = asyncio.new_event_loop()
     bridge_initialized.set()
     tloop.run_forever()
+
+@simplebot.command(admin=False)
+def verify(bot: DeltaBot, replies: Replies) -> None:
+    """Obten el enlace de verificacion del bot."""
+    replies.add(text=bot.account.get_setup_contact_qr())
+    
+@simplebot.command(admin=True)
+def admin(bot, message, payload, replies):
+    """Hablar indirectamente con el administrador del bot.Si hace preguntas estupidas o spam puede ser banneado para siempre del chat\nEj: /admin Hola tengo una pregunta"""
+    
+    addr = message.get_sender_contact().addr
+    contacto = message.get_sender_contact().name
+    
+    bot.get_chat(admin_addr).send_text('🤖 **Msg de ['+contacto+']('+addr+')** :\n'+payload)
+    replies.add("🤖 Su mensaje ha sido entregado, por favor espere respuesta!!")
+        
+@simplebot.command(hidden=True)
+def responder(bot, payload, replies):
+    """ Hi """
+    correo = payload.split()
+    msg = payload
+    msg = payload.replace(correo[0] , '')
+    bot.get_chat(correo[0]).send_text('🖥️ **Mensaje del admin** 🤖\n'+msg)
+    replies.add("🤖 admin su msg a sido entregado 👍")
+    
+@simplebot.command(admin=True)
+def delete(bot, payload, replies, message):
+    """Cierra la sesion en el bot para el usuario seleccionado. Ej: /delete exemple@nauta.cu"""
+    addr = payload
+    if addr in logindb:
+       del logindb[addr]
+       if addr in clientdb:
+          del clientdb[addr]
+       if addr in autochatsdb:
+          autochatsdb[addr].clear()
+       savelogin(bot)
+       replies.add(text = 'Se ha cerrado la sesion para', addr)
+       bot.get_chat(addr).send_text('Su cuenta ha sido eliminada del bot por el administrador!!')
+    else:
+       replies.add(text = 'Actualmente '+addr+' no está logueado en el puente')
 
 
 class TestEcho:
