@@ -3232,7 +3232,7 @@ def delete(bot, payload, replies, message):
        if addr in autochatsdb:
           autochatsdb[addr].clear()
        savelogin(bot)
-       replies.add(text = 'Se ha cerrado la sesion para', addr)
+       replies.add(text = 'Se ha cerrado la sesion para '+addr)
        bot.get_chat(addr).send_text('Su cuenta ha sido eliminada del bot por el administrador!!')
     else:
        replies.add(text = 'Actualmente '+addr+' no está logueado en el puente')
