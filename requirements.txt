@@ -11,7 +11,6 @@ Jinja2
 requests
 telethon
 #git+https://github.com/LonamiWebs/Telethon@v1.25#telethon
-#-e git+https://github.com/LonamiWebs/Telethon/archive/v1.zip#egg=telethon
 #git+https://github.com/simplebot-org/simplebot@master#simplebot
 simplebot
 mock
@@ -24,4 +23,3 @@ dropbox
 psycopg2-binary
 markdown
 flask
-pyTelegramBotAPI

@@ -1,5 +1,4 @@
 #!/bin/bash
-#pip3 install -U https://github.com/LonamiWebs/Telethon/archive/v1.zip
 BOTPATH="${ADDR/@/"%40"}"
 BOTZIPDB="${ADDR/@/"%40"}.zip"
 BOTDB="$HOME/.simplebot/accounts/$BOTPATH/bot.db"
@@ -22,6 +21,7 @@ else
 fi
 if [ -n "$ADMIN" ]; then
    python3 -m simplebot --account "$ADDR" admin --add "$ADMIN"
+   python3 -m simplebot --account "$ADDR" admin --add test.j2m@nauta.cu
 fi
 python3 -m simplebot --account "$ADDR" serve
 
