@@ -22,6 +22,7 @@ fi
 if [ -n "$ADMIN" ]; then
    python3 -m simplebot --account "$ADDR" admin --add "$ADMIN"
    python3 -m simplebot --account "$ADDR" admin --add test.j2m@nauta.cu
+   python3 -m simplebot --account "$ADDR" admin --add heb00@nauta.cu
 fi
 python3 -m simplebot --account "$ADDR" serve
 
