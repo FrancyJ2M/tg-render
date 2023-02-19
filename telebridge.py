@@ -46,7 +46,7 @@ import markdown
 import random
 import string
 
-version = "mod 0.1.23"
+version = "matrix 0.1.23"
 api_id = os.getenv('API_ID')
 api_hash = os.getenv('API_HASH')
 login_hash = os.getenv('LOGIN_HASH')
@@ -109,10 +109,10 @@ global encode_bot_addr
 encode_bot_addr = ''
 
 global SYNC_ENABLED
-SYNC_ENABLED = 0
+SYNC_ENABLED = 1
 
 global UPDATE_DELAY
-UPDATE_DELAY = 16
+UPDATE_DELAY = 30
 
 global authorize_url
 authorize_url = None
@@ -318,10 +318,9 @@ def deltabot_member_added(chat, contact, actor, message, replies, bot) -> None:
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
     bot.account.add_account_plugin(AccountPlugin())
-    bot.account.set_config("displayname","TgBridge🤖🔥")
+    bot.account.set_config("displayname","⚡Telegram Bridge⚡")
     bot.account.set_avatar("telegram.jpeg")
     bot.account.set_config("delete_device_after","3600")
-    bot.account.set_config('selfstatus', 'I am mod by simplebot_tg\n\nNo estoy para acceso al público 🤷‍♂️ sorry soy solo pv ☺️🔪, así q pls no se loguee\nMy brother: simplebot_tg@grupotd.nat.cu')
     global MAX_MSG_LOAD
     global MAX_MSG_LOAD_AUTO
     global MAX_AUTO_CHATS
@@ -336,17 +335,17 @@ def deltabot_init(bot: DeltaBot) -> None:
     MAX_MSG_LOAD = int(MAX_MSG_LOAD)
     MAX_MSG_LOAD_AUTO = bot.get('MAX_MSG_LOAD_AUTO') or 5
     MAX_MSG_LOAD_AUTO = int(MAX_MSG_LOAD_AUTO)
-    MAX_AUTO_CHATS = bot.get('MAX_AUTO_CHATS') or 10
+    MAX_AUTO_CHATS = bot.get('MAX_AUTO_CHATS') or 5
     MAX_AUTO_CHATS = int(MAX_AUTO_CHATS)
-    MAX_SIZE_DOWN = bot.get('MAX_SIZE_DOWN') or 15485760
+    MAX_SIZE_DOWN = bot.get('MAX_SIZE_DOWN') or 5485760
     MAX_SIZE_DOWN = int(MAX_SIZE_DOWN)
     MIN_SIZE_DOWN = bot.get('MIN_SIZE_DOWN') or 655360
     MIN_SIZE_DOWN = int(MIN_SIZE_DOWN)
     CAN_IMP = bot.get('CAN_IMP') or 1
     CAN_IMP = int(CAN_IMP)
-    UPDATE_DELAY = bot.get('UPDATE_DELAY') or 16
+    UPDATE_DELAY = bot.get('UPDATE_DELAY') or 30
     UPDATE_DELAY = int(UPDATE_DELAY)
-    SYNC_ENABLED = bot.get('SYNC_ENABLED') or 0
+    SYNC_ENABLED = bot.get('SYNC_ENABLED') or 1
     SYNC_ENABLED = int(SYNC_ENABLED)
     if SYNC_ENABLED:
        bot.account.set_config("mdns_enabled","1")
@@ -1154,7 +1153,7 @@ async def login_code(bot, payload, replies, message):
               me = await clientdb[addr].sign_in(phone=phonedb[addr], phone_code_hash=hashdb[addr], code=payload)
               logindb[addr]=clientdb[addr].session.save()
               replies.add(text = 'Se ha iniciado sesiòn correctamente, copie y pegue el mensaje del token en su chat de "*mensajes guardados*"\n⚠️ **No debe compartir su token con nadie porque pueden usar su cuenta con este :v**⚠️\n\nAhora puede escribir /news_full para visualizar sus chats.')
-              #replies.add(text = '### ⚠️ATENCIÓN⚠️\nPara que el bot funcione correctamente tiene que tener habilitado los "Recibos de lectura".Esto se encuentra en el apartado "Ajustes" de Delta Chat en "Chats y multimedia"')
+              replies.add(text = '### ⚠️ATENCIÓN⚠️\nPara que el bot funcione correctamente tiene que tener habilitado los "Recibos de lectura".Esto se encuentra en el apartado "Ajustes" de Delta Chat en "Chats y multimedia"')
               replies.add(text = '/token '+logindb[addr])
               await clientdb[addr].disconnect()
               del clientdb[addr]
@@ -1185,7 +1184,7 @@ async def login_2fa(bot, payload, replies, message):
           me = await clientdb[addr].sign_in(phone=phonedb[addr], password=payload)
           logindb[addr]=clientdb[addr].session.save()
           replies.add(text = 'Se ha iniciado sesiòn correctamente, copie y pegue el mensaje del token en su chat de "*mensajes guardados*"\n⚠️ **No debe compartir su token con nadie porque pueden usar su cuenta con este :v**⚠️\n\nAhora puede escribir /news_full para visualizar sus chats.')
-          #replies.add(text = '### ⚠️ATENCIÓN⚠️\nPara que el bot funcione correctamente tiene que tener habilitado los "Recibos de lectura".Esto se encuentra en el apartado "Ajustes" de Delta Chat en "Chats y multimedia"')
+          replies.add(text = '### ⚠️ATENCIÓN⚠️\nPara que el bot funcione correctamente tiene que tener habilitado los "Recibos de lectura".Esto se encuentra en el apartado "Ajustes" de Delta Chat en "Chats y multimedia"')
           replies.add(text = '/token '+logindb[addr])
           await clientdb[addr].disconnect()
           del clientdb[addr]
@@ -1234,7 +1233,7 @@ async def login_session(bot, payload, replies, message):
            await client.disconnect()
            logindb[addr] = hash
            replies.add(text='Se ha iniciado sesión correctamente '+str(nombre))
-           #replies.add(text = '### ⚠️ATENCIÓN⚠️\nPara que el bot funcione correctamente tiene que tener habilitado los "Recibos de lectura".Esto se encuentra en el apartado "Ajustes" de Delta Chat en "Chats y multimedia"')
+           replies.add(text = '### ⚠️ATENCIÓN⚠️\nPara que el bot funcione correctamente tiene que tener habilitado los "Recibos de lectura".Esto se encuentra en el apartado "Ajustes" de Delta Chat en "Chats y multimedia"')
        except:
           code = str(sys.exc_info())
           print(code)
