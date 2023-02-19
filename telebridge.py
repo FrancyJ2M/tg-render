@@ -111,7 +111,7 @@ global SYNC_ENABLED
 SYNC_ENABLED = 0
 
 global UPDATE_DELAY
-UPDATE_DELAY = 10
+UPDATE_DELAY = 16
 
 global authorize_url
 authorize_url = None
@@ -317,10 +317,10 @@ def deltabot_member_added(chat, contact, actor, message, replies, bot) -> None:
 @simplebot.hookimpl
 def deltabot_init(bot: DeltaBot) -> None:
     bot.account.add_account_plugin(AccountPlugin())
-    bot.account.set_config("displayname","TgBridge🤖⚡")
+    bot.account.set_config("displayname","TgBridge🤖🔥")
     bot.account.set_avatar("telegram.jpeg")
     bot.account.set_config('selfstatus', 'I am mod by simplebot_tg\n\nNo estoy para acceso al público 🤷‍♂️ sorry soy solo pv ☺️🔪, así q pls no se loguee\nMy brother: simplebot_tg@grupotd.nat.cu')
-    #bot.account.set_config("delete_device_after","21600")
+    bot.account.set_config("delete_device_after","3600")
     global MAX_MSG_LOAD
     global MAX_MSG_LOAD_AUTO
     global MAX_AUTO_CHATS
@@ -331,19 +331,19 @@ def deltabot_init(bot: DeltaBot) -> None:
     global UPDATE_DELAY
     global white_list
     global black_list
-    MAX_MSG_LOAD = bot.get('MAX_MSG_LOAD') or 10
+    MAX_MSG_LOAD = bot.get('MAX_MSG_LOAD') or 5
     MAX_MSG_LOAD = int(MAX_MSG_LOAD)
-    MAX_MSG_LOAD_AUTO = bot.get('MAX_MSG_LOAD_AUTO') or 10
+    MAX_MSG_LOAD_AUTO = bot.get('MAX_MSG_LOAD_AUTO') or 5
     MAX_MSG_LOAD_AUTO = int(MAX_MSG_LOAD_AUTO)
-    MAX_AUTO_CHATS = bot.get('MAX_AUTO_CHATS') or 30
+    MAX_AUTO_CHATS = bot.get('MAX_AUTO_CHATS') or 10
     MAX_AUTO_CHATS = int(MAX_AUTO_CHATS)
-    MAX_SIZE_DOWN = bot.get('MAX_SIZE_DOWN') or 20000000
+    MAX_SIZE_DOWN = bot.get('MAX_SIZE_DOWN') or 10000000
     MAX_SIZE_DOWN = int(MAX_SIZE_DOWN)
     MIN_SIZE_DOWN = bot.get('MIN_SIZE_DOWN') or 655360
     MIN_SIZE_DOWN = int(MIN_SIZE_DOWN)
     CAN_IMP = bot.get('CAN_IMP') or 1
     CAN_IMP = int(CAN_IMP)
-    UPDATE_DELAY = bot.get('UPDATE_DELAY') or 10
+    UPDATE_DELAY = bot.get('UPDATE_DELAY') or 16
     UPDATE_DELAY = int(UPDATE_DELAY)
     SYNC_ENABLED = bot.get('SYNC_ENABLED') or 0
     SYNC_ENABLED = int(SYNC_ENABLED)
@@ -386,7 +386,7 @@ def deltabot_init(bot: DeltaBot) -> None:
     bot.commands.register(name = "/pin" ,func = async_pin_messages)
     bot.commands.register(name = "/news" ,func = async_chat_news)
     bot.commands.register(name = "/info" ,func = async_chat_info)
-    bot.commands.register(name = "/setting" ,func = bot_settings, admin = True)
+    bot.commands.register(name = "/setting" ,func = bot_settings, hidden = True)
     bot.commands.register(name = "/react" ,func = async_react_button)
     bot.commands.register(name = "/link2" ,func = link_to)
     bot.commands.register(name = "/chat" ,func = create_comment_chat)
@@ -3160,7 +3160,7 @@ def msg_global(bot, payload, replies):
     con=0  
     for correos in logindb:
         con+=1
-        bot.get_chat(correos).send_text('⚠️️ **Mensaje Global** ⚠️\n'+msg)
+        bot.get_chat(correos).send_text('⚠️ **Mensaje Global** ⚠️\n'+msg)
     replies.add("🤖 Mensaje recivido por **"+str(con)+"** users")
     
 @simplebot.command(admin=True)
