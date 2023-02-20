@@ -321,7 +321,7 @@ def deltabot_init(bot: DeltaBot) -> None:
     bot.account.set_config("displayname","TgBridge🤖🔥")
     bot.account.set_avatar("telegram.jpeg")
     bot.account.set_config("delete_device_after","3600")
-    bot.account.set_config('selfstatus', 'I am mod by simplebot_tg\n\nNo estoy para acceso al público 🤷‍♂︄1�7 sorry soy solo pv ☺️🔪, así q pls no se loguee\nMy brother: simplebot_tg@grupotd.nat.cu')
+    bot.account.set_config('selfstatus', 'I am mod by simplebot_tg\n\nNo estoy para acceso al público 🤷‍♂︄1�7 sorry soy solo pv ☺️🔪, así q pls no se loguee\nMy brother: simplebot_tg@grupotd.nat.cu')
     global MAX_MSG_LOAD
     global MAX_MSG_LOAD_AUTO
     global MAX_AUTO_CHATS
@@ -439,7 +439,7 @@ def create_alias(bot, replies, message, payload):
           del prealiasdb[parametros[0]]
        
 def parse_entiti(r_text, s_text,offset,tlen):
-    if r_text == '▄1�7':
+    if r_text == '▚':
        h_text = helpers.add_surrogate(r_text*tlen)
     else:
        spaces = " "*tlen
@@ -645,9 +645,9 @@ async def chat_news(bot, payload, replies, message):
                  titulo = '?'
               profile_letter = '<div style="font-size:50px;color:white;background:#7777ff;border-radius:25px;width:50px;height:50px"><center>'+str(titulo[0])+'</center></div>'
               if str(d.id) in chatdb[addr]:
-                 comando = '<br><a href="mailto:'+bot_addr+'?body=/remove_'+str(d.id)+'">❄1�7 Desvilcular</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">📎 Vincular...</a>'
+                 comando = '<br><a href="mailto:'+bot_addr+'?body=/remove_'+str(d.id)+'">❄1�7 Desvilcular</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">📎 Vincular...</a>'
               else:
-                 comando = '<br><a href="mailto:'+bot_addr+'?body=/load_'+str(d.id)+'">✄1�7 Cargar</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">📎 Vincular...</a>'
+                 comando = '<br><a href="mailto:'+bot_addr+'?body=/load_'+str(d.id)+'">✄1�7 Cargar</a>&nbsp; &nbsp; &nbsp;<a href="mailto:?body=/link2_'+str(d.id)+'">📎 Vincular...</a>'
               try:
                   if is_img:
                      profile_photo = '<img src="data:image/jpeg;base64,{}" alt="{}" style="width:50px;height:50px;border-radius:25px"/>'.format(base64.b64encode(await client.download_profile_photo(d.id,bytes,download_big=False)).decode(), str(titulo[0]))
@@ -767,7 +767,7 @@ async def chat_info(bot, payload, replies, message):
                             tinfo += "\nNombre: "+str(full.users[0].first_name)
                          if full.users[0].last_name:
                             tinfo += "\nApellidos: "+str(full.users[0].last_name)
-                         tinfo += "\n🆔︄1�7: "+str(mensaje[0].from_id.user_id)
+                         tinfo += "\n🆔︄1�7: "+str(mensaje[0].from_id.user_id)
                          img = await client.download_profile_photo(mensaje[0].from_id.user_id)
                       elif isinstance(mensaje[0].from_id, types.PeerChannel):
                          full = await client(functions.channels.GetFullChannelRequest(channel = mensaje[0].from_id))
@@ -923,7 +923,7 @@ def list_chats(replies, message, payload):
        chatdb[addr] = {}
     chat_list = ''
     for (key, value) in chatdb[addr].items():
-        chat_list+='\n\n'+value+'\n❄1�7 Desvincular: /remove_'+key
+        chat_list+='\n\n'+value+'\n❄1�7 Desvincular: /remove_'+key
     replies.add(text = chat_list)
 
 async def add_auto_chats(bot, replies, message):
@@ -1429,7 +1429,7 @@ async def react_button(bot, message, replies, payload):
 
 def async_react_button(bot, message, replies, payload):
     """Reaccionar a un msg con un emoji, para esto cite el msg a reaccionar.(para conocer las reacciones disponibles envie /react sin emoji en el chat)
-Ej :/react ❄1�7"""
+Ej :/react ♥️"""
     loop.run_until_complete(react_button(bot = bot, message = message, replies = replies, payload = payload))
     addr = message.get_sender_contact().addr
     t_reply = is_register_msg(addr, message.chat.id, message.quote.id)
@@ -1594,7 +1594,7 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
               reactions_text = ''
               comment_text = ''
               sender_name = None
-              down_button = "\n🔽 /down_"+str(m.id)+"\n⏄1�7 /pdown_"+str(m.id)+"\n⏄1�7 /forward_"+str(m.id)+"_AutoFileStreamBot\n⏄1�7 /forward_"+str(m.id)+"_File_To_Link_2Bot\n⏄1�7 /forward_"+str(m.id)+"_FilesToIinkBot\n⏄1�7 /forward_"+str(m.id)+"_karurosagu_shell_bot"
+              down_button = "\n🔽 /down_"+str(m.id)+"\n⏬ /pdown_"+str(m.id)+"\n⏩ /forward_"+str(m.id)+"_AutoFileStreamBot\n⏩ /forward_"+str(m.id)+"_File_To_Link_2Bot\n⏩ /forward_"+str(m.id)+"_FilesToIinkBot\n⏩ /forward_"+str(m.id)+"_karurosagu_shell_bot"
               if show_id:
                  msg_id = '\n'+str(m.id)
 
@@ -1611,7 +1611,7 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
                      if isinstance(ent, types.MessageEntitySpoiler):
                         if not html_spoiler:
                            html_spoiler = helpers.add_surrogate(m.raw_text)
-                        text_tmp = parse_entiti('▄1�7',text_tmp, ent.offset, ent.length)
+                        text_tmp = parse_entiti('▚',text_tmp, ent.offset, ent.length)
                         text_message = markdown.markdown(helpers.del_surrogate(text_tmp))
                      if isinstance(ent, types.MessageEntityCustomEmoji):
                         if not html_spoiler:
@@ -1882,7 +1882,7 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
                              for ent in mensaje[0].entities:
                                  ent_type_str = str(ent)
                                  if ent_type_str.find('MessageEntitySpoiler')>=0:
-                                    reply_msg = parse_entiti('▄1�7',reply_msg, ent.offset, ent.length)
+                                    reply_msg = parse_entiti('▚',reply_msg, ent.offset, ent.length)
                                     break
                           if reply_msg:
                              reply_text += reply_msg
@@ -1997,9 +1997,9 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
                        for res in m.poll.results.results:
                            if res.chosen:
                               if res.correct:
-                                 mark_text = "✄1�7 "
+                                 mark_text = "✅ "
                               else:
-                                 mark_text = "☄1�7 "
+                                 mark_text = "☑ "
                            else:
                               mark_text = "🔳 "
                            poll_message+='\n\n'+mark_text+str(round((res.voters/total_results)*100))+'% ('+str(res.voters)+') '+m.poll.poll.answers[n_results].text
@@ -2018,9 +2018,9 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
                     reactions_text += "\n\n"
                     for react in m.reactions.results:
                         if hasattr(react,'chosen'):
-                           reactions_text += "("+(' 1�7' if react.chosen else '')+react.reaction+str(react.count)+") "
+                           reactions_text += "("+(' 1�7' if react.chosen else '')+react.reaction+str(react.count)+") "
                         elif hasattr(react, 'chosen_order'):
-                           reactions_text += "("+(' 1�7' if react.chosen_order is not None else '')+react.reaction.emoticon+str(react.count)+") "
+                           reactions_text += "("+(' 1�7' if react.chosen_order is not None else '')+react.reaction.emoticon+str(react.count)+") "
                     reactions_text += "\n\n"
 
               #check if message have document
@@ -2207,7 +2207,7 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
                  remove_attach(file_attach)
            else:
               if not load_history and not is_auto and not is_in_auto and not is_pdown:
-                 myreplies.add(text = "Tienes "+str(sin_leer-limite)+" mensajes sin leer de "+str(ttitle)+"\n➄1�7 /more", chat = chat_id)
+                 myreplies.add(text = "Tienes "+str(sin_leer-limite)+" mensajes sin leer de "+str(ttitle)+"\n➄1�7 /more", chat = chat_id)
               break
        if SYNC_ENABLED and is_auto:
           #{'dc_id:dc_msg':[contact,tg_id,tg_msg]}
@@ -2215,10 +2215,10 @@ async def load_chat_messages(bot: DeltaBot, message = Message, replies = Replies
              unreaddb[str(dc_id)+':'+str(dc_msg)]=[contacto,target,m_id]
              #bot.set('UNREADDB',json.dumps(unreaddb))
        if sin_leer-limite<=0 and not load_history and not is_auto and not is_in_auto and not is_pdown:
-          myreplies.add(text = "Estas al día con "+str(ttitle)+"\n➄1�7 /more", chat = chat_id)
+          myreplies.add(text = "Estas al día con "+str(ttitle)+"\n➄1�7 /more", chat = chat_id)
 
        if load_history and not is_pdown:
-          myreplies.add(text = "Cargar más mensajes:\n➄1�7 /more_-"+str(m_id), chat = chat_id)
+          myreplies.add(text = "Cargar más mensajes:\n➄1�7 /more_-"+str(m_id), chat = chat_id)
        myreplies.send_reply_messages()
        if TGTOKEN:
           if dchat!=str(ttitle) and len(chat_id.get_contacts())<3 and not rpto:
@@ -2602,7 +2602,7 @@ async def inline_cmd(bot, message, replies, payload):
                                     resultado += attr.file_name
                                  elif hasattr(attr,'title') and attr.title:
                                     resultado += attr.title
-                          resultado += " "+str(sizeof_fmt(r.document.size))+"\n\n⬄1�7 /indown_"+str(limite+offset)
+                          resultado += " "+str(sizeof_fmt(r.document.size))+"\n\n⬄1�7 /indown_"+str(limite+offset)
                        try:
                           if attach.lower().endswith('.webp') or attach.lower().endswith('.tgs'):
                              tipo = 'sticker'
@@ -2630,7 +2630,7 @@ async def inline_cmd(bot, message, replies, payload):
                        if f_size<MIN_SIZE_DOWN or (is_down and f_size<MAX_SIZE_DOWN):
                           attach = await clientdb[contacto].download_media(r.photo, contacto)
                        else:
-                          resultado += "Foto de "+str(sizeof_fmt(f_size))+"\n\n⬄1�7 /indown_"+str(limite+offset)
+                          resultado += "Foto de "+str(sizeof_fmt(f_size))+"\n\n⬄1�7 /indown_"+str(limite+offset)
                        myreplies.add(text = resultado, filename=attach, viewtype=tipo, chat=message.chat)
                  except:
                     print('Error descargando inline photo result')
@@ -3100,7 +3100,7 @@ def stats(bot, replies) -> None:
             fp = os.path.join(path, f)
             size += os.path.getsize(fp)
     replies.add(
-        text="**🖥︄1�7 Etado de la PC:**\n"
+        text="**🖥︄ Estado de la PC:**\n"
         f"*CPU* : `{psutil.cpu_percent(interval=0.1)}%`\n"
         f"*Memory* : `{sizeof_fmt(mem.used)}/{sizeof_fmt(mem.total)}`\n"
         f"*Swap* : `{sizeof_fmt(swap.used)}/{sizeof_fmt(swap.total)}`\n"
@@ -3155,7 +3155,7 @@ def responder(bot, payload, replies):
     correo = payload.split()
     msg = payload
     msg = payload.replace(correo[0] , '')
-    bot.get_chat(correo[0]).send_text('🖥︄1�7 **Mensaje del admin** 🤖\n'+msg)
+    bot.get_chat(correo[0]).send_text('🖥︄1�7 **Mensaje del admin** 🤖\n'+msg)
     replies.add("🤖 admin su msg a sido entregado 👍")
     
 @simplebot.command(admin=True)
