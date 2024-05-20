@@ -1,3 +1,4 @@
+from pkg_resources import DistributionNotFound, get_distribution
 import simplebot
 import deltachat
 from simplebot.bot import DeltaBot, Replies
@@ -45,6 +46,12 @@ import html
 import markdown
 import random
 import string
+try:
+    __version__ = get_distribution(simplebot).version
+except DistributionNotFound:
+    # package is not installed
+    __version__ = "0.0.0.dev0-unknown"
+
 
 version = "mod 0.1.23"
 api_id = os.getenv('API_ID')
@@ -3110,7 +3117,7 @@ def stats(bot, replies) -> None:
         f"*Memory* : `{sizeof_fmt(botmem.rss)}`\n"
         f"*Swap* : `{sizeof_fmt(botmem.swap if 'swap' in botmem._fields else 0)}`\n"
         f"*Path* : `{sizeof_fmt(size)}`\n"
-        f"*SimpleBot* : `{simplebot.__version__}`\n"
+        f"*SimpleBot* : `{__version__}`\n"
         f"*DeltaChat* : `{deltachat.__version__}`\n"
         f"*Telethon* : `{TC.__version__}`\n"
         f"*simplebot_tg* : `{version}`\n"
