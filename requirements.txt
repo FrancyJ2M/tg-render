@@ -23,4 +23,4 @@ dropbox
 psycopg2-binary
 markdown
 flask
-deltachat==1.33.2
+deltachat==1.333.2
